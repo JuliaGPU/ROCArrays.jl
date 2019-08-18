@@ -13,9 +13,11 @@ const rocblas_half = Int16
 const rocblas_half_complex = ComplexF32 # wtf???
 const rocblas_handle = Ptr{Nothing}
 
-const ROCBLAS_OPERATION_NONE = 111
-const ROCBLAS_OPERATION_TRANSPOSE = 112
-const ROCBLAS_OPERATION_CONJUGATE_TRANSPOSE = 113
+@cenum(rocblas_operation_t,
+    ROCBLAS_OPERATION_NONE = 111,
+    ROCBLAS_OPERATION_TRANSPOSE = 112,
+    ROCBLAS_OPERATION_CONJUGATE_TRANSPOSE = 113,
+)
 
 const ROCBLAS_FILL_UPPER = 121
 const ROCBLAS_FILL_LOWER = 122

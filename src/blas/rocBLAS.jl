@@ -42,9 +42,14 @@ include("librocblas.jl")
 include("util.jl")
 include("wrappers.jl")
 include("highlevel.jl")
-
-version() = VersionNumber(cublasGetProperty(CUDAapi.MAJOR_VERSION),
-                          cublasGetProperty(CUDAapi.MINOR_VERSION),
-                          cublasGetProperty(CUDAapi.PATCH_LEVEL))
 =#
+
+function version()
+    vec = zeros(UInt8, 64)
+    str = reinterpret(Cstring, pointer(vec))
+    # FIXME
+    v_str = rocblas_get_version_string()
+    VersionNumber(split(v_str, '.'))
+end
+
 end

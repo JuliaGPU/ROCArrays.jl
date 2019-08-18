@@ -26,27 +26,25 @@ end
 ROCArray(::Type{T}, size::NTuple{N,Int}) where {T,N} =
     ROCArray(DEFAULT_AGENT[], T, size)
 
-### ROCArray Methods ###
-
 function ROCArray(agent::HSAAgent, arr::Array{T,N}) where {T,N}
-    harr = ROCArray(agent, T, size(arr))
+    rarr = ROCArray(agent, T, size(arr))
     for idx in eachindex(arr)
-        harr[idx] = arr[idx]
+        rarr[idx] = arr[idx]
     end
-    return harr
+    return rarr
 end
 ROCArray(arr::Array{T,N}) where {T,N} =
     ROCArray(DEFAULT_AGENT[], arr)
 
-function Array(harr::ROCArray{T,N}) where {T,N}
-    arr = Array{T}(undef, size(harr))
+function Array(rarr::ROCArray{T,N}) where {T,N}
+    arr = Array{T}(undef, size(rarr))
     ref_arr = Ref(arr)
     GC.@preserve ref_arr begin
         ccall(:memcpy, Cvoid,
             (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t),
-            ref_arr, harr.handle, sizeof(arr))
+            ref_arr, rarr.handle, sizeof(arr))
     end
-    return harr
+    return rarr
 end
 
 Base.pointer(arr::ROCArray) = arr.handle
@@ -62,7 +60,7 @@ Base.similar(agent, arr::ROCArray{T,N}) where {T,N} =
     ROCArray(agent, T, size(arr))
 
 Base.size(arr::ROCArray) = arr.size
-Base.length(arr::ROCArray) = sum(size(arr))
+Base.length(arr::ROCArray) = prod(size(arr))
 
 function Base.fill!(arr::ROCArray{T,N}, value::T) where {T,N}
     for idx in 1:length(arr)
@@ -77,8 +75,6 @@ end
     @boundscheck checkbounds(arr, idx)
     Base.unsafe_store!(pointer(arr), value, idx)
 end
-
-### end of HSARuntime stuff
 
 #=
 

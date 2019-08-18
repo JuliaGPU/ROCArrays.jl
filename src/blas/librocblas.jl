@@ -53,8 +53,8 @@ function rocblas_get_matrix()
 end
 =#
 
-# Level 1 BLAS
-# TODO: Ensure ROCArray types match BLAS call
+## Level 1 BLAS
+# TODO: Ensure ROCArray eltypes match BLAS call
 # TODO: Complex
 
 function rocblas_dscal(handle, n, alpha::Cdouble, x::ROCArray, incx)
@@ -113,4 +113,27 @@ function rocblas_sswap(handle, n, x::ROCArray, incx, y::ROCArray, incy)
                  rocblas_status_t,
                  (rocblas_handle, rocblas_int, Ptr{Cfloat}, rocblas_int, Ptr{Cfloat}, rocblas_int),
                  handle, n, x.handle, incx, y.handle, incy)
+end
+
+## Level 2 BLAS
+
+function rocblas_dgemv(handle, trans::rocblas_operation_t, m::rocblas_int, n::rocblas_int, alpha::Cdouble, A::ROCMatrix, lda::rocblas_int, x::ROCVector, incx::rocblas_int, beta::Cdouble, y::ROCVector, incy::rocblas_int)
+    ref_alpha = Ref(alpha)
+    ref_beta = Ref(beta)
+    GC.@preserve ref_alpha ref_beta begin
+        @check ccall((:rocblas_dgemv, "librocblas"),
+                     rocblas_status_t,
+                     (rocblas_handle, rocblas_operation_t, rocblas_int, rocblas_int, Ptr{Cdouble}, Ptr{Cdouble}, rocblas_int, Ptr{Cdouble},rocblas_int, Ptr{Cdouble}, Ptr{Cdouble}, rocblas_int),
+                     handle, trans, m, n, ref_alpha, A.handle, lda, x.handle, incx, ref_beta, y.handle, incy)
+    end
+end
+function rocblas_sgemv(handle, trans::rocblas_operation_t, m::rocblas_int, n::rocblas_int, alpha::Cfloat, A::ROCMatrix, lda::rocblas_int, x::ROCVector, incx::rocblas_int, beta::Cfloat, y::ROCVector, incy::rocblas_int)
+    ref_alpha = Ref(alpha)
+    ref_beta = Ref(beta)
+    GC.@preserve ref_alpha ref_beta begin
+        @check ccall((:rocblas_sgemv, "librocblas"),
+                     rocblas_status_t,
+                     (rocblas_handle, rocblas_operation_t, rocblas_int, rocblas_int, Ptr{Cfloat}, Ptr{Cfloat}, rocblas_int, Ptr{Cfloat},rocblas_int, Ptr{Cfloat}, Ptr{Cfloat}, rocblas_int),
+                     handle, trans, m, n, ref_alpha, A.handle, lda, x.handle, incx, ref_beta, y.handle, incy)
+    end
 end

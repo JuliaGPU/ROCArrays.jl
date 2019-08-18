@@ -1,4 +1,5 @@
 using ROCArrays.rocBLAS
+import .rocBLAS: rocblas_int
 
 handle = rocBLAS.rocblas_create_handle()
 
@@ -65,6 +66,32 @@ handle = rocBLAS.rocblas_create_handle()
             _B = Array(RB)
             @test isapprox(A, _B)
             @test isapprox(B, _A)
+        end
+    end
+end
+
+@testset "Level 2 BLAS" begin
+    @testset "gemv()" begin
+        for T in (Float32, Float64)
+            A = rand(T, 8, 4)
+            RA = ROCArray(agent, A)
+            x = rand(T, 4)
+            Rx = ROCArray(agent, x)
+            y = zeros(T, 8)
+            Ry = ROCArray(agent, y)
+            op = rocBLAS.ROCBLAS_OPERATION_NONE
+            m, n = rocblas_int.(size(A))
+            lda = m
+            incx = incy = Int32(1)
+            if T === Float32
+                rocBLAS.rocblas_sgemv(handle, op, m, n, 5f0, RA, lda, Rx, incx, 0f0, Ry, incy)
+            else
+                rocBLAS.rocblas_dgemv(handle, op, m, n, 5.0, RA, lda, Rx, incx, 0.0, Ry, incy)
+            end
+            _A = Array(RA)
+            _x = Array(Rx)
+            _y = Array(Ry)
+            @test isapprox(5A * x, _y)
         end
     end
 end
