@@ -3,6 +3,11 @@ import .rocBLAS: rocblas_int
 
 handle = rocBLAS.rocblas_create_handle()
 
+@testset "Build Information" begin
+    ver = rocBLAS.version()
+    @test ver isa VersionNumber
+end
+
 @testset "Level 1 BLAS" begin
     @testset "scal()" begin
         for T in (Float32, Float64)

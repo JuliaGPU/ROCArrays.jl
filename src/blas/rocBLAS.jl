@@ -38,18 +38,11 @@ end
 =#
 
 include("librocblas.jl")
-#=
-include("util.jl")
-include("wrappers.jl")
+#include("util.jl")
+#include("wrappers.jl")
 include("highlevel.jl")
-=#
 
-function version()
-    vec = zeros(UInt8, 64)
-    str = reinterpret(Cstring, pointer(vec))
-    # FIXME
-    v_str = rocblas_get_version_string()
-    VersionNumber(split(v_str, '.'))
-end
+version() =
+    VersionNumber(join(split(rocblas_get_version_string(), '.')[1:3], '.'))
 
 end
