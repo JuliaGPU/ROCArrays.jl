@@ -1,4 +1,4 @@
-import HSARuntime: hsa_memory_allocate, hsa_memory_free, check
+import HSARuntime: hsa_memory_allocate, hsa_memory_free, check, DEFAULT_AGENT
 
 mutable struct ROCArray{T,N} <: AbstractArray{T,N}
     size::Dims{N}
@@ -38,6 +38,7 @@ ROCArray(arr::Array{T,N}) where {T,N} =
 
 function Array(rarr::ROCArray{T,N}) where {T,N}
     arr = Array{T}(undef, size(rarr))
+    # FIXME: Use Mem
     ref_arr = Ref(arr)
     GC.@preserve ref_arr begin
         ccall(:memcpy, Cvoid,
@@ -48,6 +49,8 @@ function Array(rarr::ROCArray{T,N}) where {T,N}
 end
 
 Base.pointer(arr::ROCArray) = arr.handle
+Base.cconvert(::Type{Ptr{T}}, x::ROCArray{T}) where T = x.handle
+Base.cconvert(::Type{Ptr{Nothing}}, x::ROCArray) = x.handle
 Base.IndexStyle(::Type{<:ROCArray}) = Base.IndexLinear()
 Base.IndexStyle(::ROCArray) = Base.IndexLinear()
 function Base.iterate(A::ROCArray, i=1) # copy-pasta from Base
@@ -56,8 +59,25 @@ function Base.iterate(A::ROCArray, i=1) # copy-pasta from Base
 end
 Base.similar(arr::ROCArray{T,N}) where {T,N} =
     ROCArray(T, size(arr))
-Base.similar(agent, arr::ROCArray{T,N}) where {T,N} =
+Base.similar(agent::HSAAgent, arr::ROCArray{T,N}) where {T,N} =
     ROCArray(agent, T, size(arr))
+Base.similar(arr::ROCArray{T1,N}, ::Type{T2}, dims::Dims) where {T1,N,T2} =
+    similar(DEFAULT_AGENT[], arr, T2, dims)
+function Base.similar(agent::HSAAgent, arr::ROCArray{T1,N}, ::Type{T2}, dims::Dims) where {T1,N,T2}
+    ROCArray(agent, T2, dims)
+end
+
+# copy-pasta from Base
+function Base.stride(arr::ROCArray, i::Int)
+    if i > ndims(arr)
+        return length(ar)
+    end
+    s = 1
+    for n = 1:(i-1)
+        s *= size(arr, n)
+    end
+    return s
+end
 
 Base.size(arr::ROCArray) = arr.size
 Base.length(arr::ROCArray) = prod(size(arr))

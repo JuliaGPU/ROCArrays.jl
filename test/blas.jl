@@ -1,11 +1,23 @@
 using ROCArrays.rocBLAS
 import .rocBLAS: rocblas_int
 
-handle = rocBLAS.rocblas_create_handle()
+handle = rocBLAS.handle()
 
 @testset "Build Information" begin
     ver = rocBLAS.version()
     @test ver isa VersionNumber
+end
+
+@testset "Highlevel" begin
+    for T in (Float32, Float64)
+        A = rand(T, 8, 8)
+        x = rand(T, 8)
+        RA = ROCArray(agent, A)
+        Rx = ROCArray(agent, x)
+        Rb = RA*Rx
+        _b = Array(Rb)
+        @test isapprox(A*x, _b)
+    end
 end
 
 @testset "Level 1 BLAS" begin
@@ -100,5 +112,3 @@ end
         end
     end
 end
-
-rocBLAS.rocblas_destroy_handle(handle)
