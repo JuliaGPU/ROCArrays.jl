@@ -55,7 +55,7 @@ function main()
 
     #build_roc_libraries()
 
-    for name in ("rocblas", "rocsparse", "rocalution", "rocfft", "rocrand", "miopen")
+    for name in ("rocblas", "rocsparse", "rocalution", "rocfft", "rocrand", "MIOpen")
         lib = Symbol("lib$name")
         config[lib] = find_roc_library(lib)
         if config[lib] == nothing

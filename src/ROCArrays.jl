@@ -47,7 +47,7 @@ include("array.jl")
 librocblas !== nothing    && include("blas/rocBLAS.jl")
 #librocsparse !== nothing  && include("sparse/rocSPARSE.jl")
 #librocalution !== nothing && include("solver/rocALUTION.jl")
-#librocfft !== nothing     && include("fft/rocFFT.jl")
+librocfft !== nothing     && include("fft/rocFFT.jl")
 #librocrand !== nothing    && include("rand/rocRAND.jl")
 #libmiopen !== nothing     && include("dnn/MIOpen.jl")
 
