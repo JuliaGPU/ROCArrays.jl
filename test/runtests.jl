@@ -23,6 +23,11 @@ agent_isa = HSARuntime.get_first_isa(agent)
 
 @testset "ROCArrays" begin
 
+@testset "Array Interface" begin
+    A = rand(Float32, 4, 4)
+    RA = ROCArray(A)
+    @test isapprox(A, RA)
+end
 @testset "ROCArrays External Libraries" begin
     isdefined(ROCArrays, :rocBLAS) ? include("blas.jl") : @test_skip "rocBLAS"
 end

@@ -917,7 +917,7 @@ end
 # helper function to get a device array of device pointers
 function device_batch(batch::Array{T}) where {T<:ROCArray}
   E = eltype(T)
-  ptrs = [Base.unsafe_convert(Ptr{E}, arr.buf) for arr in batch]
+  ptrs = [arr.handle for arr in batch]
   ROCArray(ptrs)
 end
 
