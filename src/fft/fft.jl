@@ -335,23 +335,27 @@ end
 
 function unsafe_execute!(plan::cROCFFTPlan{T,K,true,N}, X::ROCArray{T,N}) where {T,K,N}
     rocfft_execute(plan, [X.handle,], C_NULL, plan.execution_info)
+    hipStreamSynchronize(Ptr{Cvoid}(UInt64(0)))
 end
 
 function unsafe_execute!(plan::cROCFFTPlan{T,K,false,N}, X::ROCArray{T,N}, Y::ROCArray{T}) where {T,N,K}
     Xcopy = copy(X) # since input array can also be modified
     rocfft_execute(plan, [Xcopy.handle,], [Y.handle,], plan.execution_info)
+    hipStreamSynchronize(Ptr{Cvoid}(UInt64(0)))
 end
 
 function unsafe_execute!(plan::rROCFFTPlan{T,ROCFFT_FORWARD,false,N}, X::ROCArray{T,N}, Y::ROCArray{<:rocfftComplexes,N}) where {T<:rocfftReals,N}
     @assert plan.xtype == rocfft_transform_type_real_forward
     Xcopy = copy(X)
     rocfft_execute(plan, [Xcopy.handle,], [Y.handle,], plan.execution_info)
+    hipStreamSynchronize(Ptr{Cvoid}(UInt64(0)))
 end
 
 function unsafe_execute!(plan::rROCFFTPlan{T,ROCFFT_INVERSE,false,N}, X::ROCArray{T,N}, Y::ROCArray{<:rocfftReals,N}) where {T<:rocfftComplexes,N}
     @assert plan.xtype == rocfft_transform_type_real_inverse
     Xcopy = copy(X)
     rocfft_execute(plan, [Xcopy.handle,], [Y.handle,], plan.execution_info)
+    hipStreamSynchronize(Ptr{Cvoid}(UInt64(0)))
 end
 
 

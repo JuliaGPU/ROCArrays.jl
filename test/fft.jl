@@ -1,6 +1,7 @@
 @testset "FFT" begin
 
 using ROCArrays.rocFFT
+using ROCArrays.HIP
 using FFTW
 
 N1 = 8
@@ -11,13 +12,10 @@ N4 = 8
 MYRTOL = 1e-5
 MYATOL = 1e-8
 
-# dirty hack
 function mycollect(x::ROCArray{T,N}) where {T,N}
-    path, io = mktemp()
-    println(io, x)
-    y = zeros(T, size(x))
-    copyto!(y, x)
-    return y
+    # need to synchronize otherwise division during inverse transformation not applied
+    HIP.hipStreamSynchronize(Ptr{Cvoid}(UInt64(0)))
+    collect(x)
 end
 
 ## complex

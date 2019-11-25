@@ -2,6 +2,7 @@ module rocFFT
 
 using ..ROCArrays
 using ..ROCArrays: librocfft
+using ..HIP: hipStreamSynchronize
 
 using CEnum
 

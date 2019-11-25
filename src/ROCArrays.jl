@@ -44,6 +44,8 @@ include("array.jl")
 # so keep track of the active one.
 #const active_context = Ref{ROCContext}()
 
+# TODO: add check
+include("hip/HIP.jl")
 librocblas !== nothing    && include("blas/rocBLAS.jl")
 #librocsparse !== nothing  && include("sparse/rocSPARSE.jl")
 #librocalution !== nothing && include("solver/rocALUTION.jl")
