@@ -14,7 +14,8 @@ MYATOL = 1e-8
 
 function mycollect(x::ROCArray{T,N}) where {T,N}
     # need to synchronize otherwise division during inverse transformation not applied
-    HIP.hipStreamSynchronize(Ptr{Cvoid}(UInt64(0)))
+    #= HIP.hipStreamSynchronize(Ptr{Cvoid}(UInt64(0))) =#
+    HIP.hipDeviceSynchronize()
     collect(x)
 end
 
