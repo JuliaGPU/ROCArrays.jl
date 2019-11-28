@@ -14,7 +14,6 @@ Base.unsafe_convert(::Type{rocfft_plan}, p::ROCFFTPlan) = p.handle
 function unsafe_free!(plan::ROCFFTPlan)
     rocfft_plan_destroy(plan.handle)
     rocfft_execution_info_destroy(plan.execution_info)
-    # hsa_memory_free(plan.workarea.handle) |> check  # needed?
 end
 
 # TODO: Real to Complex full not possible atm
@@ -156,7 +155,6 @@ function create_plan(xtype::rocfft_transform_type, xdims, T, inplace, region)
                     istrides .= real_strides
                 end
             else
-                # TODO this branch
                 if any(diff(collect(region)) .< 1)
                     throw(ArgumentError("region must be an increasing sequence"))
                 end
@@ -193,7 +191,7 @@ function create_plan(xtype::rocfft_transform_type, xdims, T, inplace, region)
                     ngaps += 1
                 end
                 # CUFFT represents batches by a single stride (_dist)
-                # TODO: ROCFFT can have multiple strides, so this not necessary?
+                # ROCFFT can have multiple strides, but non sequential batch dims are also not working
                 # so we must verify that region is consistent with this:
                 if ngaps > 1
                     throw(ArgumentError("batch regions must be sequential"))
@@ -358,7 +356,7 @@ end
 function LinearAlgebra.mul!(y::ROCArray{Ty}, p::ROCFFTPlan{T,K,false}, x::ROCArray{T}) where {T,Ty,K}
     assert_applicable(p, x, y)
     unsafe_execute!(p, x, y)
-    # 0 is default stream
+    # 0 is default stream, TODO: make this more scalable
     hipStreamSynchronize(Ptr{Cvoid}(UInt64(0)))
     return y
 end
