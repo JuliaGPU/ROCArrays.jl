@@ -12,9 +12,11 @@ GPUArrays = "0c68f7d7-f131-5f86-a1c3-88cf8149b2d7"
 HSARuntime = "2c364e2c-59fb-59c3-96f3-194112e690e0"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
 AMDGPUnative = "0.1"
+AbstractFFTs = "0.4"
 Adapt = "1"
 CEnum = "0.2"
 GPUArrays = "2"
@@ -30,3 +32,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["FillArrays", "LinearAlgebra", "Random", "Test", "FFTW"]
+test = ["FFTW", "FillArrays", "LinearAlgebra", "Random", "Test"]

@@ -12,6 +12,7 @@ Adapt.adapt_storage(::AMDGPUnative.Adaptor, xs::ROCArray{T,N}) where {T,N} =
 
 
 
+#=
 ## interop with CPU array
 
 # We don't convert isbits types in `adapt`, since they are already
@@ -28,7 +29,6 @@ Adapt.adapt_storage(::Type{<:Array}, xs::ROCArray) = convert(Array, xs)
 
 Base.convert(::Type{R}, x) where R<:ROCArray = ROCArray(x)
 Base.convert(::Type{R}, x::ROCArray) where R<:ROCArray = x
+=#
 
 roc(xs) = Adapt.adapt(ROCArray{Float32}, xs)
-allowscalar(x::Bool) = nothing
-
