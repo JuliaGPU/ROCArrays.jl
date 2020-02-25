@@ -53,8 +53,6 @@ function main()
     HSARuntime.configured || build_error("Dependent package HSARuntime.jl has not been built successfully")
     AMDGPUnative.configured || build_error("Dependent package AMDGPUnative.jl has not been built successfully")
 
-    #build_roc_libraries()
-
     for name in ("rocblas", "rocsparse", "rocalution", "rocfft", "rocrand", "MIOpen")
         lib = Symbol("lib$(lowercase(name))")
         config[lib] = find_roc_library("lib$name")
