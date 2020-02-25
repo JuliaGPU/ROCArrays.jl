@@ -230,9 +230,12 @@ GPUArrays.local_memory(dev::CUDAdrv.CuDevice) =
 
 function GPUArrays._gpu_call(::ROCBackend, f, A, args::Tuple,
                              blocks_threads::Tuple{T, T}) where {N, T <: NTuple{N, Integer}}
-    blk, thr = blocks_threads
-    error("Not implemented")
-    @roc groupsize=blk gridsize=thr f(ROCKernelState(), args...)
+    gridsize, groupsize = blocks_threads
+    @show groupsize
+    @show gridsize
+    @show typeof.(args)
+    AMDGPUnative.code_llvm(f, Tuple{ROCKernelState,typeof.(rocconvert.(args))...,}; kernel=true)
+    @roc groupsize=groupsize gridsize=gridsize f(ROCKernelState(), args...)
 end
 
 # Save reinterpret and reshape implementation use this in GPUArrays
