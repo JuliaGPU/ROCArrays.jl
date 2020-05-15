@@ -34,11 +34,11 @@ end
 include("array.jl")
 #include("subarray.jl")
 #include("utils.jl")
-include("indexing.jl")
+#include("indexing.jl")
 #include("broadcast.jl")
 #include("matmul.jl")
 #include("mapreduce.jl")
-include("flux.jl") # FIXME: Remove me
+roc(xs) = Adapt.adapt(ROCArray{Float32}, xs)
 
 #include("gpuarray_interface.jl")
 
