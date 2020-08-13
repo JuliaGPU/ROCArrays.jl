@@ -1,5 +1,7 @@
 # ROCArrays - Julia Arrays for Radeon/AMD GPUs
 
+## Deprecated, please use [AMDGPU.jl](https://github.com/JuliaGPU/AMDGPU.jl)
+
 ### Warning
 
 ROCArrays is currently an experimental package, and many things are broken or
