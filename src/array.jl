@@ -1,6 +1,7 @@
 import HSARuntime: hsa_memory_allocate, hsa_memory_free, check, DEFAULT_AGENT
+import Base.Broadcast: ArrayStyle, Broadcasted, BroadcastStyle
 
-mutable struct ROCArray{T,N} <: AbstractArray{T,N}
+mutable struct ROCArray{T,N} <: DenseArray{T,N}
     size::Dims{N}
     handle::Ptr{T}
 end
@@ -39,14 +40,30 @@ ROCArray(arr::Array{T,N}) where {T,N} =
 function Array(rarr::ROCArray{T,N}) where {T,N}
     arr = Array{T}(undef, size(rarr))
     # FIXME: Use Mem
-    ref_arr = Ref(arr)
-    GC.@preserve ref_arr begin
-        ccall(:memcpy, Cvoid,
-            (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t),
-            ref_arr, rarr.handle, sizeof(arr))
-    end
-    return rarr
+    ccall(:memcpy, Cvoid,
+        (Ptr{Cvoid}, Ptr{Cvoid}, Csize_t),
+        Base.pointer(arr), rarr.handle, sizeof(arr))
+    return arr
 end
+
+## construction
+
+# type and dimensionality specified, accepting dims as tuples of Ints
+ROCArray{T,N}(::UndefInitializer, dims::Dims{N}) where {T,N} =
+  ROCArray(T, dims)
+
+# type and dimensionality specified, accepting dims as series of Ints
+ROCArray{T,N}(::UndefInitializer, dims::Integer...) where {T,N} = ROCArray{T,N}(undef, dims)
+
+# type but not dimensionality specified
+ROCArray{T}(::UndefInitializer, dims::Dims{N}) where {T,N} = ROCArray{T,N}(undef, dims)
+ROCArray{T}(::UndefInitializer, dims::Integer...) where {T} =
+  ROCArray{T}(undef, convert(Tuple{Vararg{Int}}, dims))
+
+# empty vector constructor
+ROCArray{T,1}() where {T} = ROCArray{T,1}(undef, 0)
+
+## array interface
 
 Base.pointer(arr::ROCArray) = arr.handle
 Base.cconvert(::Type{Ptr{T}}, x::ROCArray{T}) where T = x.handle
@@ -79,8 +96,9 @@ function Base.stride(arr::ROCArray, i::Int)
     return s
 end
 
+Base.elsize(::Type{<:ROCArray{T}}) where {T} = sizeof(T)
+Base.sizeof(x::ROCArray) = Base.elsize(x) * length(x)
 Base.size(arr::ROCArray) = arr.size
-Base.length(arr::ROCArray) = prod(size(arr))
 
 function Base.fill!(arr::ROCArray{T,N}, value::T) where {T,N}
     for idx in 1:length(arr)
@@ -95,6 +113,19 @@ end
     @boundscheck checkbounds(arr, idx)
     Base.unsafe_store!(pointer(arr), value, idx)
 end
+
+BroadcastStyle(::Type{<:ROCArray}) = ArrayStyle{ROCArray}()
+
+function Base.similar(bc::Broadcasted{ArrayStyle{ROCArray}}, ::Type{T}) where T
+    similar(ROCArray{T}, axes(bc))
+end
+
+Base.similar(bc::Broadcasted{ArrayStyle{ROCArray}}, ::Type{T}, dims...) where {T} = ROCArray{T}(undef, dims...)
+
+# FIXME: A stupid hack...
+Base.isapprox(RA::ROCArray, A::AbstractArray) = isapprox(Array(RA), A)
+Base.isapprox(A::AbstractArray, RA::ROCArray) = isapprox(A, Array(RA))
+Base.isapprox(RA1::ROCArray, RA2::ROCArray) = isapprox(Array(RA1), Array(RA2))
 
 #=
 

@@ -18,7 +18,7 @@ function handle()
 end
 
 include("librocblas.jl")
-#include("util.jl")
+include("util.jl")
 include("wrappers.jl")
 include("highlevel.jl")
 
